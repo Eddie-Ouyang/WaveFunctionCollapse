@@ -20,7 +20,7 @@ namespace WaveFunctionCollapse
         private int[,] collapsed;
         private bool[,,] superposition;
         private List<int[]> updateNodes;
-        private Stack<int[]> activeNodes;
+        private HashSet<int> activeNodes;
         private Stack<int[]> propagateNodes;
 
         public WFCEngine(int size)
@@ -42,10 +42,10 @@ namespace WaveFunctionCollapse
                 for(int y = 0; y < input.GetLength(1); y++)
                 {
                     var value = 100000 + input[x,y] * 10000
-                                + (y > 0 ? input[x,y-1] : input[x,input.GetLength(1) - 1])
-                                + (y < input.GetLength(1) - 1 ? input[x, y + 1] : 0) * 10
-                                + (x < input.GetLength(0) - 1 ? input[x + 1, y] : 0) * 100
-                                + (x > 0 ? input[x - 1, y] : input[input.GetLength(0) - 1, y]) * 1000;
+                                + (y > 0 ? input[x,y-1] : input[x,input.GetLength(1) - 1]) * 1000
+                                + (y < input.GetLength(1) - 1 ? input[x, y + 1] : 0) * 100
+                                + (x < input.GetLength(0) - 1 ? input[x + 1, y] : 0) * 10
+                                + (x > 0 ? input[x - 1, y] : input[input.GetLength(0) - 1, y]) * 1;
 
                     values[x,y] = value;
                     if (!nodes.Contains(value))
@@ -80,7 +80,7 @@ namespace WaveFunctionCollapse
             collapsed = new int[outputSize, outputSize];
             superposition = new bool[outputSize, outputSize, nodes.Count];
             propagateNodes = new Stack<int[]>();
-            activeNodes = new Stack<int[]>();
+            activeNodes = new HashSet<int>();
         }
 
         public List<int> GetStates(int x, int y)
@@ -100,6 +100,49 @@ namespace WaveFunctionCollapse
             return collapsed != null ? collapsed[x,y] : 0;
         }
 
+        public void Step()
+        {
+            List<int> minNodes = new List<int>();
+            int minCount = int.MaxValue;
+
+            foreach (var node in activeNodes)
+            {
+                var states = 0;
+                var x = node / 1000;
+                var y = node % 1000;
+                for (int i = 0; i < nodes.Count; i++)
+                    if (!superposition[x, y, i]) states++;
+
+                if (states < minCount)
+                {
+                    minCount = states;
+                    minNodes.Clear();
+                    minNodes.Add(node);
+                }
+                else if (states == minCount)
+                {
+                    minNodes.Add(node);
+                }
+            }
+
+            int nodeToCollapse = minNodes[(int)(new Random().NextDouble() * minNodes.Count)];
+            activeNodes.Remove(nodeToCollapse);
+            int state = 0;
+            var cx = nodeToCollapse / 1000;
+            var cy = nodeToCollapse % 1000;
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (!superposition[cx, cy, i]) minCount--;
+                if (minCount == 0)
+                {
+                    state = nodes[i];
+                    break;
+                }
+            }
+
+            Collapse(cx, cy, state);
+        }
+
         public void Collapse(int x, int y, int state)
         {
             for (int i = 0; i < nodes.Count; i++)
@@ -108,19 +151,6 @@ namespace WaveFunctionCollapse
             }
             collapsed[x, y] = state;
             propagateNodes.Push(new int[] { x, y });
-            //for (int i = 0; i < 4; i++)
-            //{
-            //    var dx = x + direction[i][0];
-            //    var dy = y + direction[i][1];
-
-            //    if (dx < 0) dx = outputSize - 1;
-            //    if (dy < 0) dy = outputSize - 1;
-            //    if (dx >= outputSize) dx = 0;
-            //    if (dy >= outputSize) dy = 0;
-
-            //    propagateNodes.Push(new int[] { dx, dy });
-            //    activeNodes.Push(new int[] { dx, dy });
-            //}
 
             while(propagateNodes.Count > 0)
             {
@@ -147,8 +177,11 @@ namespace WaveFunctionCollapse
                 UpdateStates(dx, dy);
                 for (int j = 0; j < nodes.Count; j++) change -= superposition[dx, dy, j] ? 0 : 1;
 
-                activeNodes.Push(new int[] { dx, dy } );
-                if (change != 0) propagateNodes.Push(new int[] { dx, dy } );
+                if (change != 0)
+                {
+                    activeNodes.Add(dx * 1000 + dy);
+                    propagateNodes.Push(new int[] { dx, dy });
+                }
             }
         }
 

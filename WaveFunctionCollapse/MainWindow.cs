@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using static System.Windows.Forms.AxHost;
@@ -8,8 +9,8 @@ namespace WaveFunctionCollapse
     public partial class MainWindow : Form
     {
         public static readonly int COLOR_COUNT = 5;
-        private readonly int INPUT_SIZE = 10;
-        private readonly int OUTPUT_SIZE = 32;
+        private readonly int INPUT_SIZE = 8;
+        private readonly int OUTPUT_SIZE = 16;
 
         private Color[] colors;
         private int currentColor;
@@ -153,6 +154,12 @@ namespace WaveFunctionCollapse
             var shiftY = outputData.shiftY;
 
             wfcGenerator.Collapse(selectedNode[0], selectedNode[1], state);
+            OutputPanel.Refresh();
+        }
+
+        private void Step_Click(object sender, EventArgs e)
+        {
+            wfcGenerator.Step();
             OutputPanel.Refresh();
         }
     }

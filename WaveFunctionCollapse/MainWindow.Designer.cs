@@ -38,6 +38,7 @@
             this.OutputPanel = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.Generate = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.ColorPalette.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.colorSelectD)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.colorSelectB)).BeginInit();
@@ -138,6 +139,7 @@
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.SystemColors.Desktop;
+            this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.Generate);
             this.panel1.Controls.Add(this.OutputPanel);
             this.panel1.Controls.Add(this.InputPanel);
@@ -160,6 +162,19 @@
             this.Generate.TabIndex = 3;
             this.Generate.Text = "Generate Nodes";
             this.Generate.Click += new System.EventHandler(this.generateNodes);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F);
+            this.label1.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.label1.Location = new System.Drawing.Point(353, 100);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(65, 29);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "Step";
+            this.label1.Click += new System.EventHandler(this.Step_Click);
             // 
             // MainWindow
             // 
@@ -193,6 +208,7 @@
         private System.Windows.Forms.Panel OutputPanel;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label Generate;
+        private System.Windows.Forms.Label label1;
     }
 }
 
