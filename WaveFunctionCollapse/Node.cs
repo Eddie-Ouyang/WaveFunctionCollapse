@@ -8,26 +8,28 @@ namespace WaveFunctionCollapse
 {
     internal class Node
     {
-        private int color;
-        private int north;
-        private int south;
-        private int west;
-        private int east;
+        private HashSet<int>[] neighbors;
 
-        public Node(int color, int north, int south, int west, int east)
+        public Node()
         {
-            this.color = color;
-            this.north = north;
-            this.south = south;
-            this.west = west;
-            this.east = east;
+            neighbors = new HashSet<int>[4];
+            for(int i = 0; i < 4; i++) neighbors[i] = new HashSet<int>();
         }
 
-        public override int GetHashCode()
+        public void Add(int state, int direction)
         {
-            return color * 1000 + north * 1000 + south + 100 + west * 10 + east;
+            neighbors[direction].Add(state);
         }
 
+        public HashSet<int> GetNeighborInDirection(int direction)
+        {
+            return neighbors[direction];
+        }
 
+        public bool Contains(int state, int direction)
+        {
+            return neighbors[direction].Contains(state);
+        }
+        
     }
 }

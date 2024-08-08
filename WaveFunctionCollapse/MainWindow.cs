@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using static System.Windows.Forms.AxHost;
 
 namespace WaveFunctionCollapse
 {
-    public partial class Form1 : Form
+    public partial class MainWindow : Form
     {
         public static readonly int COLOR_COUNT = 5;
-        private readonly int INPUT_SIZE = 14;
+        private readonly int INPUT_SIZE = 10;
+        private readonly int OUTPUT_SIZE = 32;
 
         private Color[] colors;
         private int currentColor;
@@ -16,13 +18,20 @@ namespace WaveFunctionCollapse
         private PanelData inputData;
         private Graphics inputDrawer;
 
+        private PanelData outputData;
+        private Graphics outputDrawer;
+
         private WFCEngine wfcGenerator;
 
         private Pen pen;
         private SolidBrush brush;
 
+        private CollapseMenu collapseMenu;
 
-        public Form1()
+        private int[] selectedNode;
+
+
+        public MainWindow()
         {
             InitializeComponent();
             colors = new Color[COLOR_COUNT];
@@ -39,7 +48,12 @@ namespace WaveFunctionCollapse
             inputDrawer = InputPanel.CreateGraphics();
             inputData = new PanelData(InputPanel, inputGrid.GetLength(0), inputGrid.GetLength(1));
 
-            wfcGenerator = new WFCEngine();
+            outputDrawer = OutputPanel.CreateGraphics();
+            outputData = new PanelData(OutputPanel, OUTPUT_SIZE, OUTPUT_SIZE);
+
+            wfcGenerator = new WFCEngine(OUTPUT_SIZE);
+
+            collapseMenu = new CollapseMenu(colors, this);
         }
 
         private void SelectColor(object sender, EventArgs e)
@@ -72,6 +86,7 @@ namespace WaveFunctionCollapse
             var relative = InputPanel.PointToClient(Cursor.Position);
             var x = inputData.LocationToGridX(relative.X);
             var y = inputData.LocationToGridY(relative.Y);
+            if (x < 0 || y < 0) return;
             inputGrid[x,y] = currentColor;
 
 
@@ -90,6 +105,55 @@ namespace WaveFunctionCollapse
             var source = (Label)sender;
             wfcGenerator.GenerateNodes(inputGrid);
             source.Text = "Complete";
+            OutputPanel.Refresh();
+        }
+
+        private void OutputPanel_Paint(object sender, PaintEventArgs e)
+        {
+            var size = outputData.gridSize;
+            var shiftX = outputData.shiftX;
+            var shiftY = outputData.shiftY;
+
+            for (int x = 0; x < OUTPUT_SIZE; x++)
+            {
+                for (int y = 0; y < OUTPUT_SIZE; y++)
+                {
+                    outputDrawer.DrawRectangle(pen, new Rectangle(shiftX + x * size, shiftY + y * size, size, size));
+                    brush.Color = Color.White;
+                    outputDrawer.DrawString(""+wfcGenerator.GetStates(y, x).Count, DefaultFont, brush, shiftX + x * size + size/2, shiftY + y * size + size/2);
+                    var color = wfcGenerator.GetState(y, x);
+                    if(color != 0)
+                    {
+                        brush.Color = colors[(color / 10000) % 10];
+                        outputDrawer.FillRectangle(brush, shiftX + x * size, shiftY + y * size, size, size);
+                    }
+                }
+            }
+        }
+
+        private void OutputPanel_MouseClick(object sender, MouseEventArgs e)
+        {
+            var size = outputData.gridSize;
+            
+            var relative = OutputPanel.PointToClient(Cursor.Position);
+            var x = outputData.LocationToGridX(relative.X);
+            var y = outputData.LocationToGridY(relative.Y);
+
+            if (x < 0 || y < 0) return;
+
+            collapseMenu.ConfigureMenu(wfcGenerator.GetStates(y, x));
+            selectedNode = new int[] { y, x };
+            collapseMenu.Show();
+        }
+
+        public void Collapse(int state)
+        {
+            var size = outputData.gridSize;
+            var shiftX = outputData.shiftX;
+            var shiftY = outputData.shiftY;
+
+            wfcGenerator.Collapse(selectedNode[0], selectedNode[1], state);
+            OutputPanel.Refresh();
         }
     }
 }

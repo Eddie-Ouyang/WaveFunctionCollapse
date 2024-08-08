@@ -1,6 +1,6 @@
 ﻿namespace WaveFunctionCollapse
 {
-    partial class Form1
+    partial class MainWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -132,6 +132,8 @@
             this.OutputPanel.Name = "OutputPanel";
             this.OutputPanel.Size = new System.Drawing.Size(872, 756);
             this.OutputPanel.TabIndex = 2;
+            this.OutputPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.OutputPanel_Paint);
+            this.OutputPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.OutputPanel_MouseClick);
             // 
             // panel1
             // 
@@ -159,13 +161,13 @@
             this.Generate.Text = "Generate Nodes";
             this.Generate.Click += new System.EventHandler(this.generateNodes);
             // 
-            // Form1
+            // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1471, 812);
             this.Controls.Add(this.panel1);
-            this.Name = "Form1";
+            this.Name = "MainWindow";
             this.Text = "Form1";
             this.ColorPalette.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.colorSelectD)).EndInit();
